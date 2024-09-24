@@ -1,6 +1,6 @@
 const express=require("express")
 const zod=require("zod")
-const { User } = require("../db")
+const { User, Account } = require("../db")
 const jwt=require("jsonwebtoken")
 const {JWT_TOKEN}= require("../config")
 const router=express.Router()
@@ -14,7 +14,7 @@ const schema=zod.object({
 })
 
 router.get("/bulk",async (req,res)=>{
-    const filter=req.body.filter
+    const filter=req.body.filter || ""
     const users=await User.find({
         $or: [
             { firstName: { "$regex": filter } },
@@ -53,12 +53,21 @@ router.post("/signup",async (req,res)=>{
         password:body.password
     })
     const userId=user._id
+    //----- create new account -----
+
+    await Account.create({
+        userId:userId,
+        balance:1+Math.random()*1000
+    })
+    //-----                     ------
     const token=jwt.sign({userId},JWT_TOKEN)
     res.json({
         msg:"User created succesfully",
         token:token
     })
 })
+
+
 const signinSchema=zod.object({
     username:zod.string().email(),
     password:zod.string().min(6),
