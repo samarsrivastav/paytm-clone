@@ -30,6 +30,7 @@ router.post("/transfer",userMiddleWare,async (req,res)=>{
         res.send({
             msg:"Insufficient Balance"
         })
+        return
     }
 
     const reciever=await Account.findOne({userId:to}).session(session)
@@ -38,6 +39,7 @@ router.post("/transfer",userMiddleWare,async (req,res)=>{
         res.send({
             msg:"User does'nt exist"
         })
+        return
     }
 
     await Account.updateOne({ userId: req.userId }, { $inc: { balance: -amount } }).session(session);
@@ -46,7 +48,8 @@ router.post("/transfer",userMiddleWare,async (req,res)=>{
     await session.commitTransaction();
     session.endSession();
     res.json({
-        msg:"Amount has been sent--> Rs. "+amount
+        msg:"Amount has been sent--> Rs. "+amount,
+        status:200
     })
 })
 
